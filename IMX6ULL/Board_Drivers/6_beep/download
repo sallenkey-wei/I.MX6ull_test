@@ -1,0 +1,10 @@
+#!/bin/bash
+
+file=$(ls *.bin | awk '{print $1}')
+
+if [ ! $file ]; then
+	echo "no bin file"
+	exit 1
+fi
+
+imxdownload $file /dev/sdc
