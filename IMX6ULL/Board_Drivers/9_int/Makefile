@@ -1,5 +1,5 @@
 CROSS_COMPILE 	?= arm-linux-gnueabihf-
-TARGET 			?= key
+TARGET 			?= int
 
 CC 				:= $(CROSS_COMPILE)gcc
 LD				:= $(CROSS_COMPILE)ld
@@ -12,18 +12,20 @@ INCDIRS 		:= imx6ul       \
 				   bsp/delay    \
 				   bsp/led		\
 				   bsp/beep		\
-				   bsp/bsp_key  \
 				   bsp/gpio     \
-				   bsp/clk
+				   bsp/clk		\
+				   bsp/exit		\
+				   bsp/int
 
 SRC_DIRS        := imx6ul       \
 				   project      \
 				   bsp/delay    \
 				   bsp/led		\
 				   bsp/beep		\
-				   bsp/bsp_key  \
 				   bsp/gpio     \
-				   bsp/clk
+				   bsp/clk		\
+				   bsp/exit		\
+				   bsp/int
 
 CFLAGS			+= $(patsubst %, -I %, $(INCDIRS))
 

@@ -11,7 +11,7 @@ int main(void){
     led_init();
 	beep_init();
 	key_init();
-	//clk_init();
+	clk_init();
 	
 	int i = 0;
 	int led_status = 0;

@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "gpio.h": "c",
+        "bsp_int.h": "c",
+        "imx6ul.h": "c"
+    }
+}
