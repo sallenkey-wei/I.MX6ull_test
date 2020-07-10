@@ -1,5 +1,5 @@
 CROSS_COMPILE 	?= arm-linux-gnueabihf-
-TARGET 			?= int
+TARGET 			?= delay
 
 CC 				:= $(CROSS_COMPILE)gcc
 LD				:= $(CROSS_COMPILE)ld
@@ -15,7 +15,9 @@ INCDIRS 		:= imx6ul       \
 				   bsp/gpio     \
 				   bsp/clk		\
 				   bsp/exit		\
-				   bsp/int
+				   bsp/int		\
+				   bsp/epit		\
+				   bsp/keyfilter
 
 SRC_DIRS        := imx6ul       \
 				   project      \
@@ -25,7 +27,9 @@ SRC_DIRS        := imx6ul       \
 				   bsp/gpio     \
 				   bsp/clk		\
 				   bsp/exit		\
-				   bsp/int
+				   bsp/int		\
+				   bsp/epit		\
+				   bsp/keyfilter
 
 CFLAGS			+= $(patsubst %, -I %, $(INCDIRS))
 
@@ -36,9 +40,7 @@ C_OBJS   		:= $(patsubst %.c, objs/%.o, $(notdir $(C_SRCS)))
 S_OBJS			:= $(patsubst %.S, objs/%.o, $(notdir $(S_SRCS)))
 OBJS			:= $(C_OBJS) $(S_OBJS)
 
-#VPATH			:= $(SRC_DIRS)
-vpath %.c $(SRC_DIRS)
-vpath %.S project
+VPATH			:= $(SRC_DIRS)
 
 $(TARGET).bin : $(OBJS)
 	$(LD) -Timx6ul.lds -o $(TARGET).elf $^
@@ -52,9 +54,6 @@ $(S_OBJS) : objs/%.o : %.S
 	$(CC) -Wall -nostdlib -c -O2 -o $@ $<
 
 .PHONY : clean
-
-print:
-	@echo C_SRCS = $(C_SRCS)
 
 clean:
 	rm -rf objs/*.o $(TARGET).dis $(TARGET).elf $(TARGET).bin load.imx
