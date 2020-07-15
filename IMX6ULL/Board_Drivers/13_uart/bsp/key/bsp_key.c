@@ -1,7 +1,7 @@
 #include "bsp_key.h"
 #include "fsl_common.h"
 #include "fsl_iomuxc.h"
-#include "delay.h"
+#include "bsp_delay.h"
 #include "bsp_gpio.h"
 
 void key_init(){
