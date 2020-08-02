@@ -21,6 +21,7 @@ Copyright © zuozhongkai Co., Ltd. 1998-2019. All rights reserved.
 #include "bsp_lcd.h"
 #include "bsp_lcdapi.h"
 #include "bsp_rtc.h"
+#include "bsp_ap3216c.h"
 
 
 /* 背景颜色索引 */
@@ -38,12 +39,8 @@ unsigned int backcolor[10] = {
  */
 int main(void)
 {
-	unsigned char index = 0;
-	unsigned char key = 0;
-	char buf[160];
-	struct rtc_datetime rtcdate;
 	unsigned char state = OFF;
-	int i = 3, t = 0;
+	unsigned short ir, ps, als;
 
 	int_init(); 				/* 初始化中断(一定要最先调用！) */
 	clk_init();			/* 初始化系统时钟 			*/
@@ -54,60 +51,35 @@ int main(void)
 	lcd_init();					/* 初始化LCD 			*/
 	rtc_init();
 
-	tftlcd_dev.forecolor = LCD_RED;	  
-	tftlcd_dev.backcolor = LCD_WHITE;
-	lcd_show_string(10,10,400,32,32,(char*)"ZERO-IMX6UL ELCD TEST");  /* 显示字符串 */
-
-	memset(buf, 0, sizeof(buf));
-
-	while(1)
+	tftlcd_dev.forecolor = LCD_RED;	
+	lcd_show_string(30, 50, 200, 16, 16, (char*)"ZERO-IMX6U IIC TEST");  
+	lcd_show_string(30, 70, 200, 16, 16, (char*)"AP3216C TEST");  
+	lcd_show_string(30, 90, 200, 16, 16, (char*)"ATOM@ALIENTEK");  
+	lcd_show_string(30, 110, 200, 16, 16, (char*)"2019/3/26");  
+	
+	while(ap3216c_init())		/* 检测不到AP3216C */
 	{
-		if(t==100)	//1s时间到了
-		{
-			t=0;
-			printf("will be running %d s......\r", i);
-			
-			lcd_fill(50, 90, 370, 110, tftlcd_dev.backcolor); /* 清屏 */
-			sprintf(buf, "will be running %ds......", i);
-			lcd_show_string(50, 90, 300, 16, 16, buf); 
-			i--;
-			if(i < 0)
-				break;
-		}
-
-		key = key_getvalue();
-		if(key == KEY0)
-		{
-			rtcdate.year = 2018;
-   			rtcdate.month = 1;
-    		rtcdate.day = 15;
-    		rtcdate.hour = 16;
-    		rtcdate.minute = 23;
-    		rtcdate.second = 0;
-			rtc_setdatetime(&rtcdate); /* 初始化时间和日期 */
-			printf("\r\n RTC Init finish\r\n");
-			break;
-		}
-			
-		delay_ms(10);
-		t++;
-	}
-	tftlcd_dev.forecolor = LCD_RED;
-	lcd_fill(50, 90, 370, 110, tftlcd_dev.backcolor); /* 清屏 */
-	lcd_show_string(50, 90, 200, 16, 16, (char*)"Current Time:");  			/* 显示字符串 */
-	tftlcd_dev.forecolor = LCD_BLUE;
-
+		lcd_show_string(30, 130, 200, 16, 16, (char*)"AP3216C Check Failed!");
+		delay_ms(500);
+		lcd_show_string(30, 130, 200, 16, 16, (char*)"Please Check!        ");
+		delay_ms(500);
+	}	
+	
+	lcd_show_string(30, 130, 200, 16, 16, (char*)"AP3216C Ready!");  
+    lcd_show_string(30, 160, 200, 16, 16, (char*)" IR:");	 
+	lcd_show_string(30, 180, 200, 16, 16, (char*)" PS:");	
+	lcd_show_string(30, 200, 200, 16, 16, (char*)"ALS:");	
+	tftlcd_dev.forecolor = LCD_BLUE;	
 	while(1)					
-	{	
-		rtc_getdatetime(&rtcdate);
-		sprintf(buf,"%d/%d/%d %d:%d:%d",rtcdate.year, rtcdate.month, rtcdate.day, rtcdate.hour, rtcdate.minute, rtcdate.second);
-		lcd_fill(50,110, 300,130, tftlcd_dev.backcolor);
-		lcd_show_string(50, 110, 250, 16, 16,(char*)buf);  /* 显示字符串 */
-		
+	{
+		ap3216c_readdata(&ir, &ps, &als);		/* 读取数据		  	*/
+		printf("ir = %d, ps = %d, als = %d\r\n", ir, ps, als);
+		//lcd_shownum(30 + 32, 160, ir, 5, 16);	/* 显示IR数据 		*/
+        //lcd_shownum(30 + 32, 180, ps, 5, 16);	/* 显示PS数据 		*/
+        //lcd_shownum(30 + 32, 200, als, 5, 16);	/* 显示ALS数据 	*/ 
+		delay_ms(500);
 		state = !state;
-		led_switch(state);
-		delay_ms(1000);	/* 延时一秒 */
+		led_switch(state);	
 	}
 	return 0;
-
 }

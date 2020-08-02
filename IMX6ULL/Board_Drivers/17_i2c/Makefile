@@ -1,5 +1,5 @@
 CROSS_COMPILE 	?= arm-linux-gnueabihf-
-TARGET 			?= rtc
+TARGET 			?= ap3216c
 
 CC 				:= $(CROSS_COMPILE)gcc
 LD				:= $(CROSS_COMPILE)ld
@@ -24,6 +24,8 @@ INCDIRS 		:= imx6ul       \
 				   bsp/uart     \
 				   bsp/lcd		\
 				   bsp/rtc		\
+				   bsp/i2c		\
+				   bsp/ap3216c		\
 				   stdio/include
 
 SRC_DIRS        := imx6ul       \
@@ -41,6 +43,8 @@ SRC_DIRS        := imx6ul       \
 				   bsp/uart      \
 				   bsp/lcd		 \
 				   bsp/rtc		 \
+				   bsp/i2c		\
+				   bsp/ap3216c		\
 				   stdio/lib
 
 CFLAGS			+= $(patsubst %, -I %, $(INCDIRS))

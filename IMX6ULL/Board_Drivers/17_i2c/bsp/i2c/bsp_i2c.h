@@ -1,6 +1,8 @@
 #ifndef __BSP_I2C_H
 #define __BSP_I2C_H
 
+#include "imx6ul.h"
+
 /* I2C状态 */
 #define I2C_STATUS_OK           (0)
 #define I2C_STATUS_BUSY         (1) 
