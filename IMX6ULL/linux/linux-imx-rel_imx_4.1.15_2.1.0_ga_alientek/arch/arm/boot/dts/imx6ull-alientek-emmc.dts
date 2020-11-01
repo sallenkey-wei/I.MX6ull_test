@@ -145,6 +145,17 @@ gpio_spi: gpio_spi@0 {
 			  spi-max-frequency = <100000>;
 		  };
 	};
+
+	alphaled{
+		compatible = "alientek,alk-led";
+		status = "okay";
+		reg = <		0x020c406c 0x04		/* CCM_CCGR1_BASE */
+					0x020E0068 0x04		/* SW_MUX_GPIO1_IO03_BASE */
+					0x020E02F4 0x04		/* SW_PAD_GPIO1_IO03_BASE */
+					0x0209C000 0x04		/* GPIO1_DR_BASE */
+					0x0209C004 0x04 >;	/* GPIO1_GDIR_BASE */
+	};
+
 };
 
 &cpu0 {
