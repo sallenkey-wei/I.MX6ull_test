@@ -81,6 +81,9 @@ static int __init dtsled_init(void){
 	int ret = 0;
 	int value = 0;
 	int regdata[10] = {0};
+	const char * string;
+	struct property * status_property;
+	
 	dtsled.major = 0;
 	
 	if(dtsled.major){
@@ -118,8 +121,9 @@ static int __init dtsled_init(void){
 	}
 
 	dtsled.dtsled_device_node = of_find_node_by_path("/alphaled");
-	if(IS_ERR(dtsled.dtsled_device_node)){
+	if(dtsled.dtsled_device_node == NULL){
 		printk("kernel find_node failed.\r\n");
+		ret = -ENODEV;
 		goto fail_device_dest;
 	}
 
@@ -135,6 +139,35 @@ static int __init dtsled_init(void){
 		printk("\r\n");
 	}
 
+	ret = of_property_read_string(dtsled.dtsled_device_node, "compatible", &string);
+	if(ret){
+		printk("kernel read compatible failed.\r\n");
+		goto fail_device_dest;
+	}
+	else{
+		printk("kernel read compatible is %s\r\n", string);
+	}
+
+	ret = of_property_read_string(dtsled.dtsled_device_node, "status", &string);
+	if(ret){
+		printk("kernel read status failed.\r\n");
+		goto fail_device_dest;
+	}
+	else{
+		printk("kernel read status is %s.\r\n", string);
+	}
+
+	status_property = of_find_property(dtsled.dtsled_device_node, "status", NULL);
+	if(status_property == NULL){
+		printk("kernel read status failed.\r\n");
+		ret = -EINVAL;
+		goto fail_device_dest;
+	}
+	else{
+		printk("kernel read status is %s\r\n", (char *)status_property->value);
+	}
+	
+
 #if 1
 	IMX6U_CCM_CCGR1 = of_iomap(dtsled.dtsled_device_node, 0);
 	SW_MUX_GPIO1_IO03 = of_iomap(dtsled.dtsled_device_node, 1);
@@ -149,7 +182,6 @@ static int __init dtsled_init(void){
 	GPIO1_GDIR = ioremap(regdata[8], regdata[9]);
 #endif
 
-	#if 1
     /* 使能GPIO1时钟 */
     value = readl(IMX6U_CCM_CCGR1);
     value &= ~(3 << 26);
@@ -165,7 +197,6 @@ static int __init dtsled_init(void){
 
     /* 默认关闭led */
     led_switch(0);
-	#endif 
 	
 	return 0;
 

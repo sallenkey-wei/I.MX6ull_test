@@ -156,6 +156,13 @@ gpio_spi: gpio_spi@0 {
 					0x0209C004 0x04 >;	/* GPIO1_GDIR_BASE */
 	};
 
+	gpioled{
+		compatible = "alientek,gpio-led";
+		status = "okay";
+		pinctrl-0 = <&pinctrl_gpioled>;
+		led-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+	};
+
 };
 
 &cpu0 {
@@ -572,6 +579,12 @@ pinctrl_wdog: wdoggrp {
 					  MX6UL_PAD_LCD_RESET__WDOG1_WDOG_ANY    0x30b0
 					  >;
 			  };
+
+pinctrl_gpioled: gpioledgrp {
+				  fsl,pins = <
+					  MX6UL_PAD_GPIO1_IO03__GPIO1_IO03  0x10b0
+					  >;
+			};
 	};
 };
 
@@ -705,7 +718,7 @@ flash0: n25q256a@0 {
 	xnur-gpio = <&gpio1 3 GPIO_ACTIVE_LOW>;
 	measure-delay-time = <0xffff>;
 	pre-charge-time = <0xfff>;
-	status = "okay";
+	status = "disable";
 };
 
 &uart1 {
