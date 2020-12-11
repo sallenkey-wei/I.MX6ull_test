@@ -178,7 +178,9 @@ gpio_spi: gpio_spi@0 {
 		status = "okay";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_key>;
-		key-gpios = <&gpio1 18 GPIO_ACTIVE_LOW>;
+		key-gpios = <&gpio1 18 GPIO_ACTIVE_HIGH>;
+		interrupt-parent = <&gpio1>;
+		interrupts = <18 IRQ_TYPE_EDGE_BOTH>;
 	};
 
 };

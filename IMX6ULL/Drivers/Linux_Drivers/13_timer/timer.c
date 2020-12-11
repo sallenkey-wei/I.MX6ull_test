@@ -56,6 +56,7 @@ static long timer_ioctl(struct file *file, unsigned int cmd, unsigned long arg){
 	struct timer_dev * dev = file->private_data;
 	unsigned int timer_period = 0;
 	int ret = 0;
+	/* 获取cmd中指定的数据长度 */
 	int size = _IOC_SIZE(SET_PERIOR);
 	
 	switch(cmd){
