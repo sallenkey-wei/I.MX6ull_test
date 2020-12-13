@@ -224,6 +224,8 @@ static void __exit keyirq_exit(void){
 	free_irq(keyirq.irq_num, &keyirq);
 	gpio_free(keyirq.gpio);
 
+	del_timer_sync(&keyirq.timer);
+
 	device_destroy(keyirq.cls, keyirq.devid);
 
 	class_destroy(keyirq.cls);
