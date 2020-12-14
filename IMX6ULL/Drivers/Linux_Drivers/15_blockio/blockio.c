@@ -48,7 +48,7 @@ static int blockio_open(struct inode *inode, struct file *file)
 	return 0;
 }
 
-
+#if 0
 static ssize_t blockio_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
 {
 	struct blockio_dev * dev = (struct blockio_dev *)file->private_data;
@@ -83,9 +83,49 @@ static ssize_t blockio_read(struct file *file, char __user *buf, size_t count, l
 	up(&dev->sem);
 	return 0;
 }
+#else
+static ssize_t blockio_read(struct file *file, char __user *buf, size_t count, loff_t *ppos)
+{
+	struct blockio_dev * dev = (struct blockio_dev *)file->private_data;
+	int ret = 0;
+	ret = down_interruptible(&dev->sem);
+	if(ret){
+		return -ERESTARTSYS;
+	}
 
+	while(!dev->key_release){
+		DEFINE_WAIT(wait);
+		
+		up(&dev->sem);
+		if(file->f_flags & O_NONBLOCK){
+			return -EAGAIN;
+		}
+		//printk("\"%s\" reading: going to sleep.\n", current->comm);
+		prepare_to_wait(&dev->r_wait, &wait, TASK_INTERRUPTIBLE);
+		if(!dev->key_release)
+			schedule();
+		finish_wait(&dev->r_wait, &wait);
+		if(signal_pending(current))
+			return -ERESTARTSYS;
+		if(down_interruptible(&dev->sem))
+			return -ERESTARTSYS;
+	}
+	if(dev->key_release){
+		dev->key_release = 0;
+		ret = copy_to_user(buf, &dev->key_value, sizeof(dev->key_value));
+		if(ret){
+			up(&dev->sem);
+			return -EFAULT;
+		}
+		up(&dev->sem);
+		return sizeof(dev->key_value);
+	}
 
+	up(&dev->sem);
+	return 0;
+}
 
+#endif
 static int blockio_release(struct inode *inode, struct file *file)
 {
 	return 0;
