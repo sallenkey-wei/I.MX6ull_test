@@ -159,7 +159,7 @@ gpio_spi: gpio_spi@0 {
 	gpioled{
 		compatible = "alientek,gpio-led";
 		status = "okay";
-		pinctrl-0 = <&pinctrl_gpioled>;
+		#pinctrl-0 = <&pinctrl_gpioled>;
 		led-gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
 	};
 
@@ -181,6 +181,15 @@ gpio_spi: gpio_spi@0 {
 		key-gpios = <&gpio1 18 GPIO_ACTIVE_HIGH>;
 		interrupt-parent = <&gpio1>;
 		interrupts = <18 IRQ_TYPE_EDGE_BOTH>;
+	};
+	dtsleds{
+		compatible = "gpio-leds";
+		pinctrl-0 = <&pinctrl_gpioled>;
+		led0 {
+			label = "red";
+			gpios = <&gpio1 3 GPIO_ACTIVE_LOW>;
+			default-state = "off";
+		};
 	};
 
 };
