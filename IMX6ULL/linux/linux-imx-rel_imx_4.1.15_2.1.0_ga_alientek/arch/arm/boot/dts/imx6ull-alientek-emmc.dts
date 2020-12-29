@@ -174,7 +174,7 @@ gpio_spi: gpio_spi@0 {
 	};
 
 	key {
-		compatible = "alitentek,alk-key";
+		compatible = "alitentek,alk-key", "sallenkey,key-input";
 		status = "okay";
 		pinctrl-names = "default";
 		pinctrl-0 = <&pinctrl_key>;

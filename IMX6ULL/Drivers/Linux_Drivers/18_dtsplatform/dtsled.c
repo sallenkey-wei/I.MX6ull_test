@@ -75,7 +75,7 @@ static const struct file_operations fops ={
 };
 
 
-int led_probe(struct platform_device * dev){
+static int led_probe(struct platform_device * dev){
 	int ret = 0;
 	printk("led_probe.\n");
 	if(platformled.major){
@@ -154,7 +154,7 @@ fail_ret:
 	return ret;
 }
 
-int led_remove(struct platform_device * dev){
+static int led_remove(struct platform_device * dev){
 	led_switch(LED_OFF);
 	gpio_free(platformled.gpio_index);
 	device_destroy(platformled.class, platformled.devid);
