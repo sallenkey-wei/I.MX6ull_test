@@ -191,7 +191,19 @@ gpio_spi: gpio_spi@0 {
 			default-state = "off";
 		};
 	};
-
+	gpio_keys{
+		compatible = "gpio-keys";
+		#address-cells = <1>;
+		#size-cells = <0>;
+		autorepeat;
+		pinctrl-names = "default";
+		pinctrl-0 = <&pinctrl_key>;
+		key_enter {
+			label = "GPIO Key Enter";
+			linux,code = <KEY_ENTER>;
+			gpios = <&gpio1 18 GPIO_ACTIVE_LOW>;
+		};
+	};
 };
 
 &cpu0 {
