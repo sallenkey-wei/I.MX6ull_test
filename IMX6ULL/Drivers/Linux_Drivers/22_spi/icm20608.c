@@ -35,28 +35,17 @@ struct icm20608_dev{
 
 static int icm20608_read_regs(struct icm20608_dev *dev, u8 reg, void *buf, int len){
 	int ret;
-	unsigned char txdata[len];
-	struct spi_message m;
-	struct spi_transfer *t;
+	unsigned char txdata[1];
+
 	struct spi_device * spi = dev->spi;
 
 	gpio_set_value(dev->cs_gpio, 0);/* 片选拉低，选中icm20608 */
-	t = kzalloc(sizeof(struct spi_transfer), GFP_KERNEL);
+
 	txdata[0] = reg | 0x80; /* icm20608写数据时寄存器地址bit7要置1 */
-	t->tx_buf = txdata;
-	t->len = 1;
-	spi_message_init(&m);
-	spi_message_add_tail(t, &m);
-	ret = spi_sync(spi, &m);
 
-	txdata[0] = 0xff;     /* 此处随便写一个值，没有意义 */
-	t->rx_buf = buf;
-	t->len = len;
-	spi_message_init(&m);
-	spi_message_add_tail(t, &m);
-	ret = spi_sync(spi, &m);
+	ret = spi_write(spi, txdata, 1);
+	ret = spi_read(spi, buf, len);
 
-	kfree(t);
 	gpio_set_value(dev->cs_gpio, 1);
 	return ret;
 	
@@ -64,24 +53,21 @@ static int icm20608_read_regs(struct icm20608_dev *dev, u8 reg, void *buf, int l
 
 static int icm20608_wirte_regs(struct icm20608_dev *dev, u8 reg, void *buf, int len){
 	int ret;
-	unsigned char txdata[len];
+	unsigned char txdata[1];
 	struct spi_message m;
 	struct spi_transfer *t;
 	struct spi_device * spi = dev->spi;
 
 	gpio_set_value(dev->cs_gpio, 0);/* 片选拉低，选中icm20608 */
-	t = kzalloc(sizeof(struct spi_transfer), GFP_KERNEL);
+	t = kzalloc(sizeof(struct spi_transfer)*2, GFP_KERNEL);
 	txdata[0] = reg & ~0x80; /* icm20608读数据时寄存器地址bit7要清零 */
 	t->tx_buf = txdata;
 	t->len = 1;
+	t[1].tx_buf = buf;
+	t[1].len = len;
 	spi_message_init(&m);
 	spi_message_add_tail(t, &m);
-	ret = spi_sync(spi, &m);
-
-	t->tx_buf = buf;
-	t->len = len;
-	spi_message_init(&m);
-	spi_message_add_tail(t, &m);
+	spi_message_add_tail(t+1, &m);
 	ret = spi_sync(spi, &m);
 
 	kfree(t);
