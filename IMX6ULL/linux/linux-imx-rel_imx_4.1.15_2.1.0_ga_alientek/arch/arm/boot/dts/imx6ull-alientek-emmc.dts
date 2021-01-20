@@ -333,6 +333,20 @@ ov5640_ep: endpoint {
 		};
 };
 
+&ecspi3 {
+	fsl,spi-num-chipselects = <1>;
+	cs-gpio = <&gpio1 20 GPIO_ACTIVE_LOW>;
+	pinctrl-names = "default";
+	pinctrl-0 = <&pinctrl_ecspi3>;
+	status = "okay";
+
+	spidev: icm20608@0 {
+		compatible = "alientek,icm20608";
+		spi-max-frequency = <8000000>;
+		reg = <0>;
+	};
+};
+
 &iomuxc {
 	pinctrl-names = "default";
 	pinctrl-0 = <&pinctrl_hog_1>;
@@ -404,8 +418,8 @@ pinctrl_flexcan1: flexcan1grp{
 
 pinctrl_flexcan2: flexcan2grp{
 					  fsl,pins = <
-						  MX6UL_PAD_UART2_RTS_B__FLEXCAN2_RX	0x1b020
-						  MX6UL_PAD_UART2_CTS_B__FLEXCAN2_TX	0x1b020
+						  /*MX6UL_PAD_UART2_RTS_B__FLEXCAN2_RX	0x1b020*/
+						  /*MX6UL_PAD_UART2_CTS_B__FLEXCAN2_TX	0x1b020*/
 						  >;
 				  };
 
@@ -506,8 +520,8 @@ pinctrl_uart1: uart1grp {
 
 pinctrl_uart2: uart2grp {
 				   fsl,pins = <
-					   MX6UL_PAD_UART2_TX_DATA__UART2_DCE_TX	0x1b0b1
-					   MX6UL_PAD_UART2_RX_DATA__UART2_DCE_RX	0x1b0b1
+					   /*MX6UL_PAD_UART2_TX_DATA__UART2_DCE_TX	0x1b0b1*/
+					   /*MX6UL_PAD_UART2_RX_DATA__UART2_DCE_RX	0x1b0b1*/
 					   MX6UL_PAD_UART3_RX_DATA__UART2_DCE_RTS	0x1b0b1
 					   MX6UL_PAD_UART3_TX_DATA__UART2_DCE_CTS	0x1b0b1
 					   >;
@@ -515,8 +529,8 @@ pinctrl_uart2: uart2grp {
 
 pinctrl_uart2dte: uart2dtegrp {
 					  fsl,pins = <
-						  MX6UL_PAD_UART2_TX_DATA__UART2_DTE_RX	0x1b0b1
-						  MX6UL_PAD_UART2_RX_DATA__UART2_DTE_TX	0x1b0b1
+						  /*MX6UL_PAD_UART2_TX_DATA__UART2_DTE_RX	0x1b0b1*/
+						  /*MX6UL_PAD_UART2_RX_DATA__UART2_DTE_TX	0x1b0b1*/
 						  MX6UL_PAD_UART3_RX_DATA__UART2_DTE_CTS	0x1b0b1
 						  MX6UL_PAD_UART3_TX_DATA__UART2_DTE_RTS	0x1b0b1
 						  >;
@@ -625,6 +639,14 @@ pinctrl_gpioled: gpioledgrp {
 pinctrl_key: keygrp {
 				  fsl,pins = <
 					  MX6UL_PAD_UART1_CTS_B__GPIO1_IO18 0xf080
+				  >;
+			};
+pinctrl_ecspi3: icm20608grp {
+				  fsl,pins = <
+					  MX6UL_PAD_UART2_RX_DATA__ECSPI3_SCLK 0x10b1
+					  MX6UL_PAD_UART2_RTS_B__ECSPI3_MISO 0x10b1
+					  MX6UL_PAD_UART2_CTS_B__ECSPI3_MOSI 0x10b1
+					  MX6UL_PAD_UART2_TX_DATA__GPIO1_IO20 0x10b0
 				  >;
 			};
 	};
