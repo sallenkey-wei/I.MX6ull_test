@@ -20,7 +20,9 @@
 
 #endif
 
-void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az);
+void IMU_init();
+void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az, float * roll, float * pitch, float * yaw);
+
 
 
 #endif

@@ -20,14 +20,17 @@ int main(int argc, char * argv[]){
 	signed int temp_adc;
 
 	float gyro_x_act, gyro_y_act, gyro_z_act; 
-	float accel_x_act, accel_y_act, accel_z_act; 
+	float accel_x_act, accel_y_act, accel_z_act;
 	float temp_act;
+	float roll, pitch, yaw;
 
 	if(argc != 2){
 		printf("Error Usage!\r\n");
 	}
 
 	file_name = argv[1];
+
+	IMU_init();
 
 	fd  = open(file_name, O_RDWR);
 	if(fd < 0){
@@ -61,7 +64,7 @@ int main(int argc, char * argv[]){
 			printf("act gx = %.2f°/S, act gy = %.2f°/S, act gz = %.2f°/S\r\n", gyro_x_act, gyro_y_act, gyro_z_act);
 			printf("act ax = %.2fg, act ay = %.2fg, act az = %.2fg\r\n", accel_x_act, accel_y_act, accel_z_act);
 			printf("act temp = %.2f°C\r\n", temp_act);
-			IMU_Update(gyro_x_act, gyro_y_act, gyro_z_act, accel_x_act, accel_y_act, accel_z_act);
+			IMU_Update(gyro_x_act, gyro_y_act, gyro_z_act, accel_x_act, accel_y_act, accel_z_act, &roll, &pitch, &yaw);
 		}
 		else{
 			printf("read error.\n");
