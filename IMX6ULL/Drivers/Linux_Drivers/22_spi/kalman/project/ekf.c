@@ -174,6 +174,7 @@ void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az,
 	q->ve[3] /= norm;
 	PRINT_VEC(q);
 
-	*roll = atan2(2*(q->ve[2]*q->ve[3]+q->ve[0]*q->ve[1]), q->ve[0]*q->ve[0]-q->ve[1]*q->ve[1]-q->ve[2]*q->ve[2]+q->ve[3]*q->ve[3]);
-	*pitch = asin(2*(q->ve[0]*q->ve[2]-q->ve[1]*q->ve[3]));
+	*roll = atan2(2*q->ve[2]*q->ve[3]+2*q->ve[0]*q->ve[1], -2*q->ve[1]*q->ve[1]-2*q->ve[2]*q->ve[2] + 1) * 57.3;
+	*pitch = asin(-2*q->ve[1]*q->ve[3]+2*q->ve[0]*q->ve[2])*57.3;
+	*yaw = atan2(2*q->ve[1]*q->ve[2]+2*q->ve[0]*q->ve[3], q->ve[0]*q->ve[0] + q->ve[1]*q->ve[1] - q->ve[2]*q->ve[2] - q->ve[3]*q->ve[3]) * 57.3;
 }
