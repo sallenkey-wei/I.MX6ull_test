@@ -6,7 +6,7 @@
 
 /* 采样周期单位ms */
 #define SAMPLE_PERIOD 		(10)
-#define DEBUG				1
+#define DEBUG				0
 #if DEBUG
 #define		PRINT_VEC(VEC)	_PRINT_VEC(VEC)
 #define		PRINT_MAT(MAT)	_PRINT_MAT(MAT)
