@@ -55,7 +55,7 @@ void IMU_init(){
 	q->ve[0] = 0;
 	q->ve[1] = 0;
 	q->ve[2] = 0;
-	q->ve[3] = -1;
+	q->ve[3] = 1;
 	
 	H = m_get(3, 4);
 	H_t = m_get(4, 3);
@@ -138,9 +138,15 @@ void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az,
 	
 
 	/* predict */
+	#if 1
+	Z_p->ve[0] = -2 * (q_p->ve[0]*q_p->ve[2] - q_p->ve[1]*q_p->ve[3]);
+	Z_p->ve[1] = 2 * (q_p->ve[0]*q_p->ve[1] + q_p->ve[2]*q_p->ve[3]);
+	Z_p->ve[2] = -1*(q_p->ve[1]*q_p->ve[1] + q_p->ve[2]*q_p->ve[2] - q_p->ve[0]*q_p->ve[0] - q_p->ve[3]*q_p->ve[3]);
+	#else
 	Z_p->ve[0] = 2 * (q_p->ve[0]*q_p->ve[2] - q_p->ve[1]*q_p->ve[3]);
 	Z_p->ve[1] = -2 * (q_p->ve[0]*q_p->ve[1] + q_p->ve[2]*q_p->ve[3]);
 	Z_p->ve[2] = q_p->ve[1]*q_p->ve[1] + q_p->ve[2]*q_p->ve[2] - q_p->ve[0]*q_p->ve[0] - q_p->ve[3]*q_p->ve[3];
+	#endif
 	norm = v_norm2(Z_p);
 	Z_p->ve[0] /= norm;
 	Z_p->ve[1] /= norm;
@@ -148,9 +154,9 @@ void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az,
 	PRINT_VEC(Z_p);
 
 	/* 观测方程的雅克比矩阵H */	
-	H->me[0][0] =  2*q_p->ve[2]; H->me[0][1] = -2*q_p->ve[3]; H->me[0][2] =  2*q_p->ve[0]; H->me[0][3] = -2*q_p->ve[1];
-	H->me[1][0] = -2*q_p->ve[1]; H->me[1][1] = -2*q_p->ve[0]; H->me[1][2] = -2*q_p->ve[3]; H->me[1][3] = -2*q_p->ve[2]; 
-	H->me[2][0] = -2*q_p->ve[0]; H->me[2][1] =  2*q_p->ve[1]; H->me[2][2] =  2*q_p->ve[2]; H->me[2][3] = -2*q_p->ve[3];
+	H->me[0][0] = -2*q_p->ve[2]; H->me[0][1] =  2*q_p->ve[3]; H->me[0][2] = -2*q_p->ve[0]; H->me[0][3] =  2*q_p->ve[1];
+	H->me[1][0] =  2*q_p->ve[1]; H->me[1][1] =  2*q_p->ve[0]; H->me[1][2] =  2*q_p->ve[3]; H->me[1][3] =  2*q_p->ve[2]; 
+	H->me[2][0] =  2*q_p->ve[0]; H->me[2][1] = -2*q_p->ve[1]; H->me[2][2] = -2*q_p->ve[2]; H->me[2][3] =  2*q_p->ve[3];
 	PRINT_MAT(H);
 	m_transp(H, H_t);
 	PRINT_MAT(H_t);
@@ -183,9 +189,11 @@ void IMU_Update(float gx, float gy, float gz, float ax, float ay, float az,
 	*roll = atan2(2*q->ve[2]*q->ve[3]+2*q->ve[0]*q->ve[1], -2*q->ve[1]*q->ve[1]-2*q->ve[2]*q->ve[2] + 1)* 57.3;
 	*pitch = asin(-2*q->ve[1]*q->ve[3]+2*q->ve[0]*q->ve[2])*57.3;
 	*yaw = atan2(2*q->ve[1]*q->ve[2]+2*q->ve[0]*q->ve[3], q->ve[0]*q->ve[0] + q->ve[1]*q->ve[1] - q->ve[2]*q->ve[2] - q->ve[3]*q->ve[3]) * 57.3;
+
+	
 #endif
 	*pitch = asin(2*q->ve[2]*q->ve[3]+2*q->ve[0]*q->ve[1])* 57.3;
-	*roll = atan2(2*q->ve[0]*q->ve[2]-2*q->ve[1]*q->ve[3], q->ve[0]*q->ve[0] - q->ve[1]*q->ve[1] - q->ve[2]*q->ve[2] + q->ve[3]*q->ve[3])* 57.3;
+	*roll = -atan2(2*q->ve[0]*q->ve[2]-2*q->ve[1]*q->ve[3], q->ve[0]*q->ve[0] - q->ve[1]*q->ve[1] - q->ve[2]*q->ve[2] + q->ve[3]*q->ve[3])* 57.3;
 	*yaw = atan2(2*q->ve[0]*q->ve[3]-2*q->ve[1]*q->ve[2], q->ve[0]*q->ve[0] - q->ve[1]*q->ve[1] + q->ve[2]*q->ve[2] - q->ve[3]*q->ve[3])* 57.3;
-	
+
 }

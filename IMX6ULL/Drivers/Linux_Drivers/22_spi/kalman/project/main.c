@@ -237,6 +237,7 @@ int main(int argc, char * argv[]){
 		else{
 			printf("read error.\n");
 		}
+		
 		usleep(SAMPLE_PERIOD * 1000);
 	}
 
