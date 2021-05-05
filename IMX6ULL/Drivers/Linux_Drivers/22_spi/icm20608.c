@@ -38,15 +38,24 @@ static int icm20608_read_regs(struct icm20608_dev *dev, u8 reg, void *buf, int l
 	unsigned char txdata[1];
 
 	struct spi_device * spi = dev->spi;
-
+#if 0
 	gpio_set_value(dev->cs_gpio, 0);/* 片选拉低，选中icm20608 */
-
+#endif
 	txdata[0] = reg | 0x80; /* icm20608写数据时寄存器地址bit7要置1 */
-
+#if 0
 	ret = spi_write(spi, txdata, 1);
 	ret = spi_read(spi, buf, len);
-
 	gpio_set_value(dev->cs_gpio, 1);
+#else	
+	/* 此处使用的是NXP实现的软件片选，分别调用spi_write和spi_read函数会导致中间片选信号拉高（主要
+	 * 是因为spi_write中调用了spi_sync函数，spi_read中也调用了spi_sync函数，没调用依次spi_sync就会
+	 * 默认本次读写已经完结，所以导致片选拉高），导致spi_read失败，spi_write_then_read则不会在write
+	 * 和read之间将片选信号拉高
+	 */
+	ret = spi_write_then_read(spi,
+		txdata, 1,
+		buf, len);
+#endif	
 	return ret;
 	
 }
@@ -57,8 +66,9 @@ static int icm20608_wirte_regs(struct icm20608_dev *dev, u8 reg, void *buf, int 
 	struct spi_message m;
 	struct spi_transfer *t;
 	struct spi_device * spi = dev->spi;
-
+#if 0
 	gpio_set_value(dev->cs_gpio, 0);/* 片选拉低，选中icm20608 */
+#endif
 	t = kzalloc(sizeof(struct spi_transfer)*2, GFP_KERNEL);
 	txdata[0] = reg & ~0x80; /* icm20608读数据时寄存器地址bit7要清零 */
 	t->tx_buf = txdata;
@@ -71,7 +81,9 @@ static int icm20608_wirte_regs(struct icm20608_dev *dev, u8 reg, void *buf, int 
 	ret = spi_sync(spi, &m);
 
 	kfree(t);
+#if 0
 	gpio_set_value(dev->cs_gpio, 1);
+#endif
 	return ret;
 }
 
@@ -101,10 +113,14 @@ static int icm20608_reginit(struct icm20608_dev *dev){
 	mdelay(50);
 	icm20608_write_onereg(dev, ICM20_PWR_MGMT_1, 0x01);
 	mdelay(50);
+	//验证写函数是否正常
+	//regvalue = icm20608_read_onereg(dev, ICM20_PWR_MGMT_1);
+	//printk("icm20608 ICM20_PWR_MGMT_1 = %#X\n", regvalue);
 	regvalue = icm20608_read_onereg(dev, ICM20_WHO_AM_I);
 	printk("icm20608 id = %#X\r\n", regvalue);
 	if(regvalue != ICM20608D_ID && regvalue != ICM20608G_ID)
 		return -1;
+	
 	
 	icm20608_write_onereg(dev, ICM20_SMPLRT_DIV, 0x00); 	/* 输出速率是内部采样率					*/
 	icm20608_write_onereg(dev, ICM20_GYRO_CONFIG, 0x18); 	/* 陀螺仪±2000dps量程 				*/
@@ -232,7 +248,7 @@ static int	icm20608_probe(struct spi_device *spi){
 	}
 
 	//printk("parent full name is %s\n", dev->parent_nd->full_name);
-
+#if 0
 	dev->cs_gpio = of_get_named_gpio(dev->parent_nd, "cs-gpio", 0);
 	if(!gpio_is_valid(dev->cs_gpio)){
 		printk("of_get_named_gpio failed.\n");
@@ -251,7 +267,7 @@ static int	icm20608_probe(struct spi_device *spi){
 		printk("can't set gpio!\n");
 		goto failed_and_free_gpio;
 	}
-
+#endif
 	/* 将我们自定义的结构体变量放入dev中的driver_data */	
 	dev_set_drvdata(&spi->dev, dev);
 
@@ -284,8 +300,9 @@ failed_and_ret:
 }
 static int icm20608_remove(struct spi_device *spi){
 	struct icm20608_dev * dev = (struct icm20608_dev *)dev_get_drvdata(&spi->dev);
-
+#if 0
 	gpio_free(dev->cs_gpio);
+#endif
 	device_destroy(dev->cls, dev->devid);
 	class_destroy(dev->cls);
 	cdev_del(&dev->cdev);
