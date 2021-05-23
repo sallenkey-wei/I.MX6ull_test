@@ -68,7 +68,7 @@ reg_sd1_vmmc: regulator@1 {
 				  regulator-name = "VSD_3V3";
 				  regulator-min-microvolt = <3300000>;
 				  regulator-max-microvolt = <3300000>;
-				  gpio = <&gpio1 9 GPIO_ACTIVE_HIGH>;
+				  //gpio = <&gpio1 9 GPIO_ACTIVE_HIGH>;
 				  enable-active-high;
 			  };
 
@@ -331,6 +331,19 @@ ov5640_ep: endpoint {
 		   };
 			};
 		};
+ft5426: ft5426@38 {
+		   compatible = "edt,edt-ft5426";
+		   reg = <0x38>;
+		   pinctrl-names = "default";
+		   pintctrl-0 = <&pinctrl_tsc
+						&pinctrl_lcdif_reset>;
+		   interrupt-parent = <&gpio1>;
+		   interrupts = <9 IRQ_TYPE_EDGE_FALLING>;
+		   reset-gpios = <&gpio5 9 GPIO_ACTIVE_LOW>;
+		   interrupt-gpios = <&gpio1 9 GPIO_ACTIVE_LOW>;
+		   
+	   };
+	
 };
 
 &ecspi3 {
@@ -355,7 +368,12 @@ pinctrl_hog_1: hoggrp-1 {
 				   fsl,pins = <
 					   MX6UL_PAD_UART1_RTS_B__GPIO1_IO19	0x17059 /* SD1 CD */
 					   MX6UL_PAD_GPIO1_IO05__USDHC1_VSELECT	0x17059 /* SD1 VSELECT */
-					   MX6UL_PAD_GPIO1_IO09__GPIO1_IO09        0x17059 /* SD1 RESET */
+					   //MX6UL_PAD_GPIO1_IO09__GPIO1_IO09        0x17059 /* SD1 RESET */
+					   >;
+			   };
+pinctrl_tsci: tscigrp {
+				   fsl,pins = <
+					   MX6UL_PAD_GPIO1_IO09__GPIO1_IO09        0xF080 /* touch screen int */
 					   >;
 			   };
 pinctrl_led: ledgrp {
@@ -510,6 +528,7 @@ pinctrl_tsc: tscgrp {
 					 MX6UL_PAD_GPIO1_IO04__GPIO1_IO04	0xb0
 					 >;
 			 };
+			 
 
 pinctrl_uart1: uart1grp {
 				   fsl,pins = <
