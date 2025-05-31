@@ -27,6 +27,7 @@ int main(void){
 		printf("输入两个整数, 使用空格隔开:");
 		scanf("%d %d", &a, &b);
 		printf("\r\n数据%d+%d=%d\r\n", a, b, a+b);
+		printf("CBAR() = %#x\n", __get_CBAR());
 		status = !status;
 		led_switch(status);
 	}

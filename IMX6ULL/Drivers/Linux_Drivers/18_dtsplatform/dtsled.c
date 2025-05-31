@@ -12,6 +12,8 @@
 #include <linux/poll.h>
 #include <linux/wait.h>
 #include <linux/platform_device.h>
+#include <linux/pm_runtime.h>
+#include <linux/pm_domain.h>
 
 
 #define PLATFORMLED_NAME	"dtsplatformled"
@@ -19,6 +21,8 @@
 
 #define LED_ON				1
 #define LED_OFF				0
+
+#define USE_LEGACY_GPIO_API 0
 
 struct platformled_dev{
 	dev_t devid;
@@ -28,7 +32,12 @@ struct platformled_dev{
 	struct class * class;
 	struct device * dev;
 	struct device_node * nd;
+	struct platform_device * platform_dev;
+ #if USE_LEGACY_GPIO_API
 	int gpio_index;
+#else
+	struct gpio_desc * gpio_desc;
+#endif
 };
 
 static struct platformled_dev platformled = {
@@ -37,22 +46,50 @@ static struct platformled_dev platformled = {
 };
 
 void led_switch(u8 status){
+ #if USE_LEGACY_GPIO_API
 	if(status == LED_ON){
 		gpio_set_value(platformled.gpio_index, 0);
 	}
 	else if(status == LED_OFF){
 		gpio_set_value(platformled.gpio_index, 1);
 	}
+#else
+	if(status == LED_ON){
+		gpiod_set_value(platformled.gpio_desc, 1);
+	}
+	else if(status == LED_OFF){
+		gpiod_set_value(platformled.gpio_desc, 0);
+	}
+#endif
 }
 
 static int platformled_open(struct inode *inode, struct file *filp){
 	filp->private_data = (void *)container_of(inode->i_cdev, struct platformled_dev, cdev);
+#if 0
+	int ret;
+	struct platformled_dev * platformled = filp->private_data;
+	struct platform_device * pdev = platformled->platform_dev;
+
+	pm_runtime_enable(&pdev->dev);
+
+    ret = pm_runtime_get_sync(&pdev->dev);
+    if (ret < 0) printk("===pm_runtime_get_sync error===\n");
+#endif
 
 	return 0;
 }
 
 static int platformled_release(struct inode *inode, struct file *filp)
 {
+#if 0
+	struct platformled_dev * platformled = filp->private_data;
+	struct platform_device * pdev = platformled->platform_dev;
+	int ret;
+	ret = pm_runtime_put_sync(&pdev->dev);
+	if (ret < 0) printk("===pm_runtime_put_sync error===\n");
+	pm_runtime_disable(&pdev->dev);
+#endif
+
 	return 0;
 }
 
@@ -118,6 +155,7 @@ static int led_probe(struct platform_device * dev){
 
 	platformled.nd = dev->dev.of_node;
 
+#if USE_LEGACY_GPIO_API
 	platformled.gpio_index = of_get_named_gpio(platformled.nd, "led-gpios", 0);
 	if(platformled.gpio_index < 0){
 		printk("kernel of_get_named_gpio failed.\r\n");
@@ -137,11 +175,29 @@ static int led_probe(struct platform_device * dev){
 		printk("kernel gpio_directon_output failed.\r\n");
 		goto fail_gpio_free;
 	}
+#else
+	platformled.gpio_desc = devm_gpiod_get(&dev->dev, "led", GPIOD_OUT_HIGH); // default logic level high, the led default status is on.
+	if (IS_ERR(platformled.gpio_desc)) {
+		ret = PTR_ERR(platformled.gpio_desc);
+		goto fail_dev_dest;
+	}
+
+	//ret = gpiod_direction_output(platformled.gpio_desc, 1); // 1: default logic level high, already set gpio GPIOD_OUT_HIGH previous, this code is not essential.
+	if (ret) {
+		goto fail_dev_dest;
+	}
+
+
+#endif
+
+	platformled.platform_dev = dev;
 	
 	return 0;
 
+#if USE_LEGACY_GPIO_API
 fail_gpio_free:
 	gpio_free(platformled.gpio_index);
+#endif
 fail_dev_dest:
 	device_destroy(platformled.class, platformled.devid);
 fail_class_dest:
@@ -156,7 +212,9 @@ fail_ret:
 
 static int led_remove(struct platform_device * dev){
 	led_switch(LED_OFF);
+#if USE_LEGACY_GPIO_API
 	gpio_free(platformled.gpio_index);
+#endif
 	device_destroy(platformled.class, platformled.devid);
 	class_destroy(platformled.class);
 	cdev_del(&platformled.cdev);
@@ -164,18 +222,40 @@ static int led_remove(struct platform_device * dev){
 	return 0;
 }
 
+#if 0
+static int viv_dev_system_suspend(struct device *dev)
+{
+    printk("=============> Enter viv_dev_system_suspend");
+    return 0;
+}
+
+static int viv_dev_system_resume(struct device *dev)
+{
+	printk("=============> Enter viv_dev_system_resume");
+    return 0;
+}
+#endif
+
 static const struct of_device_id led_of_match[] = {
 	{.compatible = "alientek,gpio-led"},
 	{/*Sentinel*/}
 };
 
+#if 0
+static const struct dev_pm_ops viv_dev_pm_ops = {
+    SET_SYSTEM_SLEEP_PM_OPS(viv_dev_system_suspend, viv_dev_system_resume)
+};
+#endif
 
 static struct platform_driver led_driver = {
 	.probe = led_probe,
 	.remove = led_remove,
 	.driver = {
 		.name = "imx6ul-led",/* 必须要有，要不然内核会段错误 */
-		.of_match_table = led_of_match
+		.of_match_table = led_of_match,
+#if 0
+		.pm     = &viv_dev_pm_ops,
+#endif
 	},
 };
 

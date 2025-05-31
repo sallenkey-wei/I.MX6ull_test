@@ -36,6 +36,7 @@ Reset_Handler:
     mcr p15, 0, r0, c1, c0, 0
 
 #if 0
+    /* 在int_init()中设置, 所以这里注掉 */
     /* 汇编设置中断向量偏移 */
     ldr r0, =0x87800000
     dsb
