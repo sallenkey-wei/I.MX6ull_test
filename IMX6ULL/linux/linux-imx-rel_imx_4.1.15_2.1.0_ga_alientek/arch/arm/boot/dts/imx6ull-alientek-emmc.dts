@@ -101,8 +101,8 @@ reg_gpio_dvfs: regulator-gpio {
 		 * hp-det-polarity = 1: hp detect high for speaker
 		 */
 		hp-det = <3 0>;
-		hp-det-gpios = <&gpio5 4 0>;
-		mic-det-gpios = <&gpio5 4 0>;
+		/*hp-det-gpios = <&gpio5 4 0>;
+		mic-det-gpios = <&gpio5 4 0>;*/
 		audio-routing =
 			"Headphone Jack", "HP_L",
 			"Headphone Jack", "HP_R",
@@ -369,6 +369,7 @@ pinctrl_hog_1: hoggrp-1 {
 					   MX6UL_PAD_UART1_RTS_B__GPIO1_IO19	0x17059 /* SD1 CD */
 					   MX6UL_PAD_GPIO1_IO05__USDHC1_VSELECT	0x17059 /* SD1 VSELECT */
 					   //MX6UL_PAD_GPIO1_IO09__GPIO1_IO09        0x17059 /* SD1 RESET */
+					   MX6UL_PAD_GPIO1_IO00__ANATOP_OTG1_ID 0x13058 /* OTG1 ID */
 					   >;
 			   };
 pinctrl_tsci: tscigrp {
