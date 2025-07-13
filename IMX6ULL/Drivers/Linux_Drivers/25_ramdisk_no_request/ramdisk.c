@@ -81,6 +81,32 @@ static void ramdisk_request_fn(struct request_queue *q)
     }
 }
 
+static void ramdisk_make_request_fn(struct request_queue * q, struct bio * bio) {
+    int offset;
+    struct bio_vec bvec;
+    struct bvec_iter iter;
+
+    offset = bio->bi_iter.bi_sector << 9;
+
+    bio_for_each_segment(bvec, bio, iter) {
+        char *ptr = page_address(bvec.bv_page) + bvec.bv_offset;
+        unsigned long len = bvec.bv_len;
+
+        if (bio_data_dir(bio) == READ) {
+            memcpy(ptr, ramdisk_device.ramdisk_buf + offset, len);
+        }
+        else if (bio_data_dir(bio) == WRITE) {
+            memcpy(ramdisk_device.ramdisk_buf + offset, ptr, len);
+        }
+        offset += len;
+    }
+
+    set_bit(BIO_UPTODATE, &bio->bi_flags);
+    bio_endio(bio, 0);
+
+
+}
+
 static int __init ramdisk_init(void) {
     int ret = 0;
     ramdisk_device.major = register_blkdev(0, DEVICE_NAME);
@@ -106,12 +132,15 @@ static int __init ramdisk_init(void) {
         goto out_disk;
     }
 
-    ramdisk_device.req_queue = blk_init_queue(ramdisk_request_fn, &ramdisk_device.lock);
+    // 分配请求队列
+    ramdisk_device.req_queue = blk_alloc_queue(GFP_KERNEL);
     if (!ramdisk_device.req_queue) {
         ret = -ENOMEM;
         goto out_queue;
     }
 
+    // 设置制造请求函数
+    blk_queue_make_request(ramdisk_device.req_queue, ramdisk_make_request_fn);
     ramdisk_device.gendisk->major = ramdisk_device.major;
     ramdisk_device.gendisk->first_minor = 0;
     ramdisk_device.gendisk->fops = &ramdisk_fops;
